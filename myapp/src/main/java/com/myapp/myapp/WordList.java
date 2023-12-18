@@ -11,8 +11,24 @@ import java.util.List;
 
 public class WordList {
     private List<Word> words;
+    private String category;
     private static final String DATABASE_URL = "jdbc:sqlite:./dbs/Dictionary.db";
 
+    public List<Word> getWords() {
+        return words;
+    }
+
+    public void setWords(List<Word> words) {
+        this.words = words;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     public WordList(List<Word> words) {
         this.words = words;
@@ -29,39 +45,25 @@ public class WordList {
         System.out.println(words.get(index).getWord());
         return words.get(index);
     }
-    public static List<Word> generateRandomWords(int num) throws Exception {//生成指定数目随机单词
+    public static List<Word> generateRandomWords(String category, int num) throws Exception {//生成指定数目随机单词
         Connection conn= DriverManager.getConnection(DATABASE_URL);
         List<Word> words = new ArrayList<Word>();
-        int [] randomWordId = RandomWord.getRandomWordId(conn,num);
+        int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
-            String word = RandomWord.getWordById(conn, randomWordId[i]);
-            int finalI = i;
-            new Thread (()->{
-                try {
-                    String chineseMeaning = RandomWord.getChineseMeaning(conn, randomWordId[finalI]);
-                    words.add(new Word(finalI,word,chineseMeaning));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
+
         }
         return words;
     }
-    public WordList(int num) throws Exception {
+    public WordList(String category,int num) throws Exception {
+        this.category = category;
         Connection conn= DriverManager.getConnection(DATABASE_URL);
         List<Word> words = new ArrayList<Word>();
-        int [] randomWordId = RandomWord.getRandomWordId(conn,num);//生成指定数目随机单词
+        int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
-            String word = RandomWord.getWordById(conn, randomWordId[i]);
-            int finalI = i;
-            new Thread (()->{//多线程,减少查找时间
-                try {
-                    String chineseMeaning = RandomWord.getChineseMeaning(conn, randomWordId[finalI]);
-                    words.add(new Word(finalI,word,chineseMeaning));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
+            String word = RandomWord.getWordById(conn,category, randomWordId[i]);
+            String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
+            String type = RandomWord.getTypeById(conn,category,randomWordId[i]);
+            words.add(new Word(word,meaning,type));
         }
         this.words = words;
     }

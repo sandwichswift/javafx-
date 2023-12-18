@@ -7,22 +7,12 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
 
 <AnchorPane prefHeight="563.0" prefWidth="794.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.myapp.myapp.MenuController">
    <children>
       <Label fx:id="judgeLabel" alignment="CENTER" layoutX="243.0" layoutY="417.0" prefHeight="134.0" prefWidth="392.0" text="judgeLabel" />
-      <TextField fx:id="searchTextField" layoutX="107.0" prefHeight="86.0" prefWidth="492.0" promptText="请输入要查找的单词" />
+      <TextField fx:id="searchTextField" layoutX="150.0" prefHeight="86.0" prefWidth="449.0" promptText="请输入要查找的单词" />
       <Button fx:id="searchButton" layoutX="601.0" mnemonicParsing="false" prefHeight="86.0" prefWidth="88.0" text="搜索" />
-      <VBox prefHeight="565.0" prefWidth="100.0">
-         <children>
-            <MenuButton fx:id="menu" mnemonicParsing="false" prefHeight="85.0" prefWidth="100.0" text="菜单">
-              <items>
-                <MenuItem fx:id="learnNew" mnemonicParsing="false" text="学习新单词" />
-                <MenuItem fx:id="review" mnemonicParsing="false" text="复习" />
-              </items>
-            </MenuButton>
-         </children></VBox>
       <Button fx:id="formerButton" layoutX="573.0" layoutY="274.0" mnemonicParsing="false" text="上一个" />
       <Button fx:id="nextButton" layoutX="573.0" layoutY="365.0" mnemonicParsing="false" text="下一个" />
       <Label fx:id="labelA" alignment="CENTER" layoutX="303.0" layoutY="273.0" prefHeight="30.0" prefWidth="226.0" text="optionA" />
@@ -34,6 +24,16 @@
       <Button fx:id="buttonC" layoutX="228.0" layoutY="335.0" mnemonicParsing="false" text="ButtonC" />
       <Button fx:id="buttonD" layoutX="228.0" layoutY="365.0" mnemonicParsing="false" text="ButtonD" />
       <Label fx:id="searchResultLabel" alignment="CENTER" layoutX="101.0" layoutY="108.0" prefHeight="107.0" prefWidth="583.0" text="Meaning of word searched" />
-      <ChoiceBox fx:id="numberOfWords" layoutX="100.0" layoutY="273.0" prefHeight="29.0" prefWidth="114.0" />
+      <ChoiceBox fx:id="numberOfWords" layoutX="101.0" layoutY="232.0" prefHeight="29.0" prefWidth="114.0" />
+      <MenuButton alignment="CENTER" mnemonicParsing="false" prefHeight="86.0" prefWidth="150.0" text="菜单(请选择级别)">
+        <items>
+          <MenuItem fx:id="junior" mnemonicParsing="false" text="初中词汇" />
+          <MenuItem fx:id="senior" mnemonicParsing="false" text="高中词汇" />
+            <MenuItem fx:id="cet4" mnemonicParsing="false" text="四级词汇" />
+            <MenuItem fx:id="cet6" mnemonicParsing="false" text="六级词汇" />
+            <MenuItem fx:id="gre" mnemonicParsing="false" text="考研词汇" />
+            <MenuItem fx:id="toefl" mnemonicParsing="false" text="托福词汇" />
+        </items>
+      </MenuButton>
    </children>
 </AnchorPane>

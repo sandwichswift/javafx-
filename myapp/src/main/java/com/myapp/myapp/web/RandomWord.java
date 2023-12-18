@@ -16,36 +16,16 @@ import java.util.Random;
 
 public class RandomWord  {
     private static final String DATABASE_URL = "jdbc:sqlite:./dbs/Dictionary.db";
+    public static String category;
 
-    private static final String CREATE_TABLE_SQL1 = "CREATE TABLE IF NOT EXISTS Words (\n"
-            + "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + "    word TEXT NOT NULL,\n"
-            + "    meaning TEXT\n"
-            + ");";
-    private static final String CREATE_TABLE_SQL2 = "CREATE TABLE IF NOT EXISTS Review (\n"
-            + "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + "    word TEXT NOT NULL,\n"
-            + "    meaning TEXT NOT NULL\n"
-            + ");";
-    private static void initializeDatabase() throws Exception {//初始化数据库,创建两个表
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
-            try (PreparedStatement createTableStatement = connection.prepareStatement(CREATE_TABLE_SQL1)) {
-                createTableStatement.executeUpdate();
-            }
-            try (PreparedStatement createTableStatement = connection.prepareStatement(CREATE_TABLE_SQL2)) {
-                createTableStatement.executeUpdate();
-            }
-        }
-    }
     public static void main(String[] args) throws Exception {
-        initializeDatabase();
         try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
             // 随机抽取一个单词的ID
-            int [] randomWordId = getRandomWordId(connection,1);
+            int [] randomWordId = getRandomWordId(connection,category,1);
 
             for(int i : randomWordId){
                 // 在数据库中查找该单词的中文含义
-                String chineseMeaning = getChineseMeaning(connection, randomWordId[i]);
+                String chineseMeaning = getChineseMeaning(connection, category, randomWordId[i]);
 
                 // 打印或使用中文含义
                 System.out.println("中文含义：" + chineseMeaning);
@@ -56,8 +36,8 @@ public class RandomWord  {
         }
     }
 
-    public static int[] getRandomWordId(Connection connection, int num) throws Exception {
-        String selectRandomWordIdSQL = "SELECT id FROM Words ORDER BY RANDOM() LIMIT ?";
+    public static int[] getRandomWordId(Connection connection, String category, int num) throws Exception {
+        String selectRandomWordIdSQL = "SELECT id FROM " + category + " ORDER BY RANDOM() LIMIT ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectRandomWordIdSQL)) {
             selectStatement.setInt(1, num);//num为随机单词数目
             ResultSet resultSet = selectStatement.executeQuery();
@@ -72,19 +52,19 @@ public class RandomWord  {
         }
     }
 
-    public static String getChineseMeaning(Connection connection, int wordId) throws Exception {
-        String selectMeaningSQL = "SELECT meaning FROM Words WHERE id = ?";
+    public static String getChineseMeaning(Connection connection, String category, int wordId) throws Exception {
+        String selectMeaningSQL = "SELECT translation FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectMeaningSQL)) {
             selectStatement.setInt(1, wordId);
             ResultSet resultSet = selectStatement.executeQuery();
 
             if (resultSet.next()) {
-                String meaning = resultSet.getString("meaning");
+                String meaning = resultSet.getString("translation");
                 if (meaning == null || meaning.isEmpty()) {
                     // 如果含义为空，则搜索并更新
-                    String word = getWordById(connection, wordId);
+                    String word = getWordById(connection, category,wordId);
                     String chineseMeaning = searchWordMeaning(word);
-                    updateMeaningInDatabase(connection, wordId, chineseMeaning);
+                    updateReviewDatabase(connection, wordId, category);
                     return chineseMeaning;
                 } else {
                     // 含义不为空，直接返回
@@ -96,8 +76,8 @@ public class RandomWord  {
         }
     }
 
-    public static String getWordById(Connection connection, int wordId) throws Exception {
-        String selectWordSQL = "SELECT word FROM Words WHERE id = ?";
+    public static String getWordById(Connection connection, String category, int wordId) throws Exception {
+        String selectWordSQL = "SELECT word FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
             selectStatement.setInt(1, wordId);
             ResultSet resultSet = selectStatement.executeQuery();
@@ -109,8 +89,48 @@ public class RandomWord  {
             }
         }
     }
+    public static String getTypeById(Connection connection, String category, int wordId) throws Exception {
+        String selectWordSQL = "SELECT type FROM " + category +" WHERE id = ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
+            selectStatement.setInt(1, wordId);
+            ResultSet resultSet = selectStatement.executeQuery();
 
+            if (resultSet.next()) {
+                return resultSet.getString("type");
+            } else {
+                throw new RuntimeException("Word not found in the database.");
+            }
+        }
+    }
 
+    public static String getMeaningById(Connection connection, String category, int wordId) throws Exception {
+        String selectWordSQL = "SELECT translation FROM " + category +" WHERE id = ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
+            selectStatement.setInt(1, wordId);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getString("translation");//translation为中文含义
+            } else {
+                throw new RuntimeException("Word not found in the database.");
+            }
+        }
+    }
+
+    public static int getReviewTimeById(Connection connection, String category, int wordId) throws Exception {
+        String selectWordSQL = "SELECT review_time FROM review" + category +" WHERE id = ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
+            selectStatement.setInt(1, wordId);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt("review_time");
+        }
+            return 0;
+    }
+    }
+
+    //从有道词典中搜索单词的中文含义
     private static String searchWordMeaning(String word) throws IOException {
         String searchUrl = "https://dict.youdao.com/result?word=" + word +"&lang=en";
         Document document = Jsoup.connect(searchUrl).get();
@@ -137,18 +157,14 @@ public class RandomWord  {
 
         return "未找到中文含义或网络异常";
     }
-
-    private static void updateMeaningInDatabase(Connection connection, int wordId, String chineseMeaning) throws Exception {
-        String updateMeaningSQL1 = "UPDATE Words SET meaning = ? WHERE id = ?";//更新单词的中文含义
-        String updateMeaningSQL2 = "INSERT INTO Review (word, meaning) VALUES (?, ?)";//将单词和中文含义插入到Review表中
-        try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL1)) {
-            updateStatement.setString(1, chineseMeaning);
-            updateStatement.setInt(2, wordId);
-            updateStatement.executeUpdate();
-        }
-        try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL2)) {
-            updateStatement.setString(1, getWordById(connection, wordId));
-            updateStatement.setString(2, chineseMeaning);
+    //更新Review表
+    private static void updateReviewDatabase(Connection connection, int wordId, String tableName) throws Exception {
+        String updateMeaningSQL = "UPDATE review" + tableName + " (word, translation,type,review_time) VALUES (?, ?, ?, ?)";//将单词和中文含义插入到Review表中
+        try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL)) {
+            updateStatement.setString(1, getWordById(connection, tableName, wordId));
+            updateStatement.setString(2, getMeaningById(connection, tableName, wordId));
+            updateStatement.setString(3, getTypeById(connection, tableName, wordId));
+            updateStatement.setInt(4, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
             updateStatement.executeUpdate();
         }
     }
