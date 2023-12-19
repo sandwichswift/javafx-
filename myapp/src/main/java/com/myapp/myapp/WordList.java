@@ -50,7 +50,10 @@ public class WordList {
         List<Word> words = new ArrayList<Word>();
         int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
-
+            String word = RandomWord.getWordById(conn,category, randomWordId[i]);
+            String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
+            String type = RandomWord.getTypeById(conn,category,randomWordId[i]);
+            words.add(new Word(randomWordId[i], word,meaning,type));
         }
         return words;
     }
@@ -63,7 +66,7 @@ public class WordList {
             String word = RandomWord.getWordById(conn,category, randomWordId[i]);
             String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
             String type = RandomWord.getTypeById(conn,category,randomWordId[i]);
-            words.add(new Word(word,meaning,type));
+            words.add(new Word(randomWordId[i], word,meaning,type));
         }
         this.words = words;
     }

@@ -19,7 +19,7 @@ public class RandomWord  {
     public static String category;
 
     public static void main(String[] args) throws Exception {
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
+        /*try (Connection connection = DriverManager.getConnection(DATABASE_URL)) {
             // 随机抽取一个单词的ID
             int [] randomWordId = getRandomWordId(connection,category,1);
 
@@ -33,7 +33,8 @@ public class RandomWord  {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
+        System.out.println(searchEnglish("喜欢"));
     }
 
     public static int[] getRandomWordId(Connection connection, String category, int num) throws Exception {
@@ -131,7 +132,7 @@ public class RandomWord  {
     }
 
     //从有道词典中搜索单词的中文含义
-    private static String searchWordMeaning(String word) throws IOException {
+    public static String searchWordMeaning(String word) throws IOException {
         String searchUrl = "https://dict.youdao.com/result?word=" + word +"&lang=en";
         Document document = Jsoup.connect(searchUrl).get();
 
@@ -157,15 +158,71 @@ public class RandomWord  {
 
         return "未找到中文含义或网络异常";
     }
+    //从有道词典中获取英文翻译
+    public static String searchEnglish(String word) throws IOException{
+        String searchUrl = "https://dict.youdao.com/result?word=" + word +"&lang=en";
+        Document document = Jsoup.connect(searchUrl).get();
+
+        // 获取搜索结果的摘要部分
+        Elements point = document.select("div.trans-ce a.point");//获取英文翻译
+        if(!point.isEmpty()){
+            int size = point.size();
+            List<String> english = new ArrayList<>();
+            for(int i = 0;i<size;i++){
+                String englishText = point.get(i).text();
+                english.add(englishText);
+            }
+            return String.join("\n",english);
+        }
+        return "未找到英文翻译或网络异常";
+    }
     //更新Review表
-    private static void updateReviewDatabase(Connection connection, int wordId, String tableName) throws Exception {
-        String updateMeaningSQL = "UPDATE review" + tableName + " (word, translation,type,review_time) VALUES (?, ?, ?, ?)";//将单词和中文含义插入到Review表中
-        try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL)) {
-            updateStatement.setString(1, getWordById(connection, tableName, wordId));
-            updateStatement.setString(2, getMeaningById(connection, tableName, wordId));
-            updateStatement.setString(3, getTypeById(connection, tableName, wordId));
-            updateStatement.setInt(4, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
+    public static void updateReviewDatabase(Connection connection, int wordId, String tableName) throws Exception {
+        //先查找Review表中是否有该单词
+        String selectWordSQL = "SELECT * FROM review" + tableName +" WHERE id = ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
+            selectStatement.setInt(1, wordId);
+            ResultSet resultSet = selectStatement.executeQuery();
+            if (resultSet.next()) {
+                //如果有该单词，则更新review_time
+                updateReviewTime(connection, wordId, tableName);
+            } else {
+                //如果没有该单词，则插入该单词
+                String updateMeaningSQL = "INSERT INTO review" + tableName + " (word, translation,type,review_time) VALUES (?, ?, ?, ?)";//将单词和中文含义插入到Review表中
+                try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL)) {
+                updateStatement.setString(1, getWordById(connection, tableName, wordId));
+                updateStatement.setString(2, getMeaningById(connection, tableName, wordId));
+                updateStatement.setString(3, getTypeById(connection, tableName, wordId));
+                updateStatement.setInt(4, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
+                updateStatement.executeUpdate();
+        }
+            }
+        }
+
+    }
+
+    private static void updateReviewTime(Connection connection, int wordId, String tableName) {
+        String updateReviewTimeSQL = "UPDATE review" + tableName + " SET review_time = ? WHERE id = ?";
+        try (PreparedStatement updateStatement = connection.prepareStatement(updateReviewTimeSQL)) {
+            updateStatement.setInt(1, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
+            updateStatement.setInt(2, wordId);
             updateStatement.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean checkNetwork() {
+        try {
+            Document document = Jsoup.connect("https://www.baidu.com/").get();
+            Elements elements = document.select("title");
+            if (elements.isEmpty()) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (IOException e) {
+            return false;
         }
     }
 }

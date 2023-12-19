@@ -86,6 +86,7 @@ public class JsonToDatabase {
                 insertWord(connection, wordObject, tableName);
                 System.out.println(i +"/" + wordsArray.size());
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -98,7 +99,8 @@ public class JsonToDatabase {
 
 
         JsonArray translationsArray = wordObject.getAsJsonArray("translations");
-        for (int j = 0; j < translationsArray.size(); j++) {
+
+        for (int j = 0; j < translationsArray.size(); j++) {//一个单词可能有多个翻译
             JsonObject translationObject = translationsArray.get(j).getAsJsonObject();
 
             String translation;

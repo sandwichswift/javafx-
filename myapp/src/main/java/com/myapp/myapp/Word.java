@@ -1,7 +1,8 @@
 package com.myapp.myapp;
 
 public class Word {
-    public Word( String word, String meaning,String type) {
+    public Word(int id, String word, String meaning,String type) {
+        this.id = id;
         this.word = word;
         this.meaning = meaning;
         this.type = type;
