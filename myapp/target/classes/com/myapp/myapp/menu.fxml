@@ -10,17 +10,17 @@
 
 <AnchorPane prefHeight="563.0" prefWidth="794.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.myapp.myapp.MenuController">
    <children>
-      <Label fx:id="judgeLabel" alignment="CENTER" layoutX="333.0" layoutY="408.0" prefHeight="66.0" prefWidth="251.0" text="judgeLabel" />
+      <Label id="judgeLabel" fx:id="judgeLabel" alignment="CENTER" layoutX="353.0" layoutY="483.0" prefHeight="30.0" prefWidth="251.0" />
       <TextField fx:id="searchTextField" layoutX="182.0" prefHeight="86.0" prefWidth="525.0" promptText="请输入要查找的单词" />
       <Button fx:id="searchButton" layoutX="706.0" mnemonicParsing="false" prefHeight="86.0" prefWidth="88.0" text="搜索" />
       <Button fx:id="formerButton" layoutX="704.0" layoutY="247.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="上一个" />
-      <Button fx:id="nextButton" layoutX="703.0" layoutY="380.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="下一个" />
-      <Button fx:id="buttonA" layoutX="228.0" layoutY="274.0" mnemonicParsing="false" text="ButtonA" />
-      <Button fx:id="buttonB" layoutX="228.0" layoutY="305.0" mnemonicParsing="false" text="ButtonB" />
-      <Button fx:id="buttonC" layoutX="228.0" layoutY="335.0" mnemonicParsing="false" text="ButtonC" />
-      <Button fx:id="buttonD" layoutX="228.0" layoutY="365.0" mnemonicParsing="false" text="ButtonD" />
-      <Label fx:id="searchResultLabel" alignment="CENTER" layoutX="182.0" layoutY="89.0" prefHeight="134.0" prefWidth="611.0" text="Meaning of word searched" />
-      <ChoiceBox fx:id="numberOfWords" disable="true" layoutY="402.0" prefHeight="30.0" prefWidth="178.0" />
+      <Button fx:id="nextButton" layoutX="706.0" layoutY="417.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="下一个" />
+      <Button fx:id="buttonA" layoutX="228.0" layoutY="241.0" mnemonicParsing="false" text="ButtonA" />
+      <Button fx:id="buttonB" layoutX="228.0" layoutY="297.0" mnemonicParsing="false" text="ButtonB" />
+      <Button fx:id="buttonC" layoutX="228.0" layoutY="356.0" mnemonicParsing="false" text="ButtonC" />
+      <Button fx:id="buttonD" layoutX="227.0" layoutY="418.0" mnemonicParsing="false" text="ButtonD" />
+      <Label fx:id="searchResultLabel" alignment="CENTER" layoutX="182.0" layoutY="89.0" prefHeight="113.0" prefWidth="611.0" text="Meaning of word searched" />
+      <ChoiceBox fx:id="numberOfWords" disable="true" layoutY="402.0" prefHeight="30.0" prefWidth="194.0" />
       <MenuButton alignment="CENTER" mnemonicParsing="false" prefHeight="86.0" prefWidth="178.0" text="菜单(请先选择级别）">
         <items>
           <MenuItem fx:id="junior" mnemonicParsing="false" text="junior(初中)" />
@@ -31,11 +31,16 @@
             <MenuItem fx:id="TOEFL" mnemonicParsing="false" text="TOEFL(托福)" />
         </items>
       </MenuButton>
-      <Label alignment="CENTER" layoutX="3.0" layoutY="378.0" prefHeight="30.0" prefWidth="178.0" text="请选择要背的单词数" />
-      <Label fx:id="current" alignment="CENTER" layoutX="346.0" layoutY="223.0" prefHeight="38.0" prefWidth="226.0" text="currentWord" />
-      <Label alignment="CENTER" layoutY="273.0" prefHeight="30.0" prefWidth="178.0" text="请选择模式" />
-      <ChoiceBox fx:id="MODE" layoutX="3.0" layoutY="303.0" prefHeight="30.0" prefWidth="178.0" />
-      <Label fx:id="modeLabel" alignment="CENTER" layoutX="4.0" layoutY="240.0" prefHeight="30.0" prefWidth="178.0" text="当前模式：英译中" />
-      <Label fx:id="scoreLabel" alignment="CENTER" layoutX="331.0" layoutY="496.0" prefHeight="66.0" prefWidth="251.0" text="scoreLabel" />
+      <Label alignment="CENTER" layoutX="3.0" layoutY="378.0" prefHeight="30.0" prefWidth="194.0" text="请选择要背的单词数(默认20)" />
+      <Label id="currentWord" fx:id="current" alignment="CENTER" layoutX="232.0" layoutY="203.0" prefHeight="38.0" prefWidth="475.0" />
+      <Label alignment="CENTER" layoutY="273.0" prefHeight="30.0" prefWidth="194.0" text="请选择模式" />
+      <ChoiceBox fx:id="MODE" layoutX="3.0" layoutY="303.0" prefHeight="30.0" prefWidth="194.0" />
+      <Label fx:id="modeLabel" alignment="CENTER" layoutX="4.0" layoutY="240.0" prefHeight="30.0" prefWidth="194.0" text="当前模式：英译中" />
+      <Label id="scoreLabel" fx:id="scoreLabel" alignment="CENTER" layoutX="344.0" layoutY="515.0" prefHeight="38.0" prefWidth="251.0" />
+      <Label fx:id="labelA" layoutX="230.0" layoutY="267.0" prefHeight="30.0" prefWidth="475.0" />
+      <Label fx:id="labelB" layoutX="230.0" layoutY="326.0" prefHeight="30.0" prefWidth="475.0" />
+      <Label fx:id="labelC" layoutX="230.0" layoutY="387.0" prefHeight="30.0" prefWidth="475.0" />
+      <Label fx:id="labelD" layoutX="230.0" layoutY="447.0" prefHeight="30.0" prefWidth="475.0" />
+      <Button fx:id="reviewButton" layoutX="3.0" layoutY="484.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="194.0" text="开始复习" />
    </children>
 </AnchorPane>

@@ -4,6 +4,7 @@ import com.myapp.myapp.web.RandomWord;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,23 @@ public class WordList {
         List<Word> words = new ArrayList<Word>();
         int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
+            String word = RandomWord.getWordById(conn,category, randomWordId[i]);
+            String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
+            String type = RandomWord.getTypeById(conn,category,randomWordId[i]);
+            words.add(new Word(randomWordId[i], word,meaning,type));
+        }
+        this.words = words;
+    }
+    public WordList(String category) throws Exception {//生成数据库中所有单词
+        this.category = category;
+        Connection conn= DriverManager.getConnection(DATABASE_URL);
+        List<Word> words = new ArrayList<Word>();
+        String countSQL= "SELECT COUNT(id) FROM " + category;
+        PreparedStatement countStatement= conn.prepareStatement(countSQL);
+        countStatement.execute();
+        int count = countStatement.getResultSet().getInt(1);
+        int [] randomWordId = RandomWord.getRandomWordId(conn,category,count);
+        for(int i =0 ;i<count;i++){
             String word = RandomWord.getWordById(conn,category, randomWordId[i]);
             String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
             String type = RandomWord.getTypeById(conn,category,randomWordId[i]);

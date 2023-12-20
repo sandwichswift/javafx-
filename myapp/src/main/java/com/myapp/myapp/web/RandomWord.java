@@ -6,10 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -38,7 +35,7 @@ public class RandomWord  {
     }
 
     public static int[] getRandomWordId(Connection connection, String category, int num) throws Exception {
-        String selectRandomWordIdSQL = "SELECT id FROM " + category + " ORDER BY RANDOM() LIMIT ?";
+        String selectRandomWordIdSQL = "SELECT id FROM " + category + " WHERE isExtracted IS NULL ORDER BY RANDOM() LIMIT ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectRandomWordIdSQL)) {
             selectStatement.setInt(1, num);//num为随机单词数目
             ResultSet resultSet = selectStatement.executeQuery();
@@ -47,10 +44,21 @@ public class RandomWord  {
             int i = 0;
             while (resultSet.next()) {
                 randomWordId[i] = resultSet.getInt("id");
+                updateWordAsExtracted(connection,randomWordId[i],category);//更新数据库中的isExtracted字段
                 i++;
             }
             return randomWordId;
         }
+    }
+
+    public static void updateWordAsExtracted(Connection connection, int wordId,String category) throws SQLException {
+        // 更新数据库中的 isExtracted 字段
+        String updateQuery = "UPDATE " + category + " SET isExtracted = 1 WHERE id = ?";
+
+
+        PreparedStatement statement = connection.prepareStatement(updateQuery);
+        statement.setInt(1, wordId);
+        statement.executeUpdate();
     }
 
     public static String getChineseMeaning(Connection connection, String category, int wordId) throws Exception {

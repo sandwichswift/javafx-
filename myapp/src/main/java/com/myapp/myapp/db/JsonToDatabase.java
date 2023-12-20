@@ -58,7 +58,8 @@ public class JsonToDatabase {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "word TEXT NOT NULL," +
                 "translation TEXT," +
-                "type TEXT)";
+                "type TEXT," +
+                "isExtracted INTEGER)";//isExtracted为Null表示未被抽取，为1表示已被抽取
         String createReviewTableSQL = "CREATE TABLE IF NOT EXISTS review" + tableName + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "word TEXT NOT NULL," +

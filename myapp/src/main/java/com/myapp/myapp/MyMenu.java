@@ -28,6 +28,22 @@ public class MyMenu extends Application{
             e.printStackTrace();
         }
     }
+    public void openReviewWindow(){
+        try{
+            FXMLLoader loader = new FXMLLoader(MyMenu.class.getResource("review.fxml"));
+            AnchorPane root = (AnchorPane) loader.load();
+            ReviewController controller = loader.getController();
+            controller.setApplication(this);
+
+            // Create new stage
+            Stage newStage = new Stage();
+            newStage.setScene(new Scene(root));
+            newStage.setTitle("Review");
+            newStage.show();
+    }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         launch();
