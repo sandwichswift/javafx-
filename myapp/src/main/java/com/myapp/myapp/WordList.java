@@ -13,7 +13,7 @@ import java.util.List;
 public class WordList {
     private List<Word> words;
     private String category;
-    private static final String DATABASE_URL = "jdbc:sqlite:./dbs/Dictionary.db";
+    private static final String DATABASE_URL = "jdbc:sqlite:./src/main/resources/dbs/Dictionary.db" + "?journal_mode=WAL&synchronous=OFF";
 
     public List<Word> getWords() {
         return words;
@@ -47,7 +47,7 @@ public class WordList {
         return words.get(index);
     }
     public static List<Word> generateRandomWords(String category, int num) throws Exception {//生成指定数目随机单词
-        Connection conn= DriverManager.getConnection(DATABASE_URL);
+        Connection conn= DatabaseConnection.getConnection();
         List<Word> words = new ArrayList<Word>();
         int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
@@ -58,9 +58,10 @@ public class WordList {
         }
         return words;
     }
+    //生成指定数目随机单词,从原始单词表中获取
     public WordList(String category,int num) throws Exception {
         this.category = category;
-        Connection conn= DriverManager.getConnection(DATABASE_URL);
+        Connection conn= DatabaseConnection.getConnection();
         List<Word> words = new ArrayList<Word>();
         int [] randomWordId = RandomWord.getRandomWordId(conn,category,num);
         for(int i =0 ;i<num;i++){
@@ -71,15 +72,17 @@ public class WordList {
         }
         this.words = words;
     }
-    public WordList(String category) throws Exception {//生成数据库中所有单词
+
+    //生成review数据库中所有单词，涉及读操作
+    public WordList(String category) throws Exception {
         this.category = category;
-        Connection conn= DriverManager.getConnection(DATABASE_URL);
+        Connection conn= DatabaseConnection.getConnection();
         List<Word> words = new ArrayList<Word>();
         String countSQL= "SELECT COUNT(id) FROM " + category;
         PreparedStatement countStatement= conn.prepareStatement(countSQL);
         countStatement.execute();
         int count = countStatement.getResultSet().getInt(1);
-        int [] randomWordId = RandomWord.getRandomWordId(conn,category,count);
+        int [] randomWordId = RandomWord.getRandomWordIdFromReview(conn,category,count);
         for(int i =0 ;i<count;i++){
             String word = RandomWord.getWordById(conn,category, randomWordId[i]);
             String meaning = RandomWord.getChineseMeaning(conn,category,randomWordId[i]);
@@ -87,5 +90,9 @@ public class WordList {
             words.add(new Word(randomWordId[i], word,meaning,type));
         }
         this.words = words;
+    }
+
+    public Word get(int index) {
+        return words.get(index);
     }
 }

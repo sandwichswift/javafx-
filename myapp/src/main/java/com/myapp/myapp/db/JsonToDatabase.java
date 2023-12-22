@@ -1,6 +1,7 @@
 package com.myapp.myapp.db;
 
 import com.google.gson.*;
+import com.myapp.myapp.DatabaseConnection;
 
 
 import java.io.FileReader;
@@ -17,7 +18,7 @@ public class JsonToDatabase {
     public static String jsonFilePath_CET6 = "./libs/json/4-CET6-顺序.json";//六级词汇
     public static String jsonFilePath_GRE = "./libs/json/5-考研-顺序.json";//GRE词汇
     public static String jsonFilePath_TOEFL = "./libs/json/6-托福-顺序.json";//托福词汇
-    public static String jdbcUrl = "jdbc:sqlite:./dbs/Dictionary.db";
+    public static String jdbcUrl ="jdbc:sqlite:./src/main/resources/Dictionary.db";
     public static String[] jsons = {jsonFilePath_junior,jsonFilePath_senior,jsonFilePath_CET4,jsonFilePath_CET6,jsonFilePath_GRE,jsonFilePath_TOEFL};
     public static String[] tableNames = {"words_junior","words_senior","words_CET4","words_CET6","words_GRE","words_TOEFL"};
     /*public static void main(String[] args) {
@@ -44,7 +45,7 @@ public class JsonToDatabase {
     }*/
     public static void main(String[] args) {
         for(int i = 0;i < jsons.length;i++){
-            try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            try (Connection connection = DatabaseConnection.getConnection()) {
                 createWordsTable(connection,tableNames[i]); // 创建数据库表
                 //insertWordsAndTranslationsFromJson(connection, jsons[i],tableNames[i]); // 从JSON文件插入数据
             } catch (Exception e) {
@@ -63,7 +64,7 @@ public class JsonToDatabase {
         String createReviewTableSQL = "CREATE TABLE IF NOT EXISTS review" + tableName + " (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "word TEXT NOT NULL," +
-                "translation TEXT," +
+                "translation TEXT UNIQUE," +
                 "type TEXT," +
                 "review_time INTEGER)";
         try (PreparedStatement statement = connection.prepareStatement(createTableSQL)) {

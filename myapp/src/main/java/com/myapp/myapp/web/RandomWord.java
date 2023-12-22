@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RandomWord  {
-    private static final String DATABASE_URL = "jdbc:sqlite:./dbs/Dictionary.db";
+public class RandomWord  {//除了网络操作，均涉及数据库操作
+    private static final String DATABASE_URL = "jdbc:sqlite:./src/main/resources/dbs/Dictionary.db" + "?journal_mode=WAL&synchronous=OFF";
     public static String category;
 
     public static void main(String[] args) throws Exception {
@@ -34,6 +34,7 @@ public class RandomWord  {
         System.out.println(searchEnglish("喜欢"));
     }
 
+    //随机抽取指定数目单词的ID，只能用于原始单词表，读操作
     public static int[] getRandomWordId(Connection connection, String category, int num) throws Exception {
         String selectRandomWordIdSQL = "SELECT id FROM " + category + " WHERE isExtracted IS NULL ORDER BY RANDOM() LIMIT ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectRandomWordIdSQL)) {
@@ -44,23 +45,40 @@ public class RandomWord  {
             int i = 0;
             while (resultSet.next()) {
                 randomWordId[i] = resultSet.getInt("id");
-                updateWordAsExtracted(connection,randomWordId[i],category);//更新数据库中的isExtracted字段
                 i++;
             }
             return randomWordId;
         }
     }
 
+    //随机抽取指定数目单词的ID，只能用于Review表，读操作
+    public static int[] getRandomWordIdFromReview(Connection connection, String category, int num) throws Exception {
+        String selectRandomWordIdSQL = "SELECT id FROM " + category + " ORDER BY RANDOM() LIMIT ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectRandomWordIdSQL)) {
+            selectStatement.setInt(1, num);//num为随机单词数目
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            int[] randomWordId = new int[num];
+            int i = 0;
+            while (resultSet.next()) {
+                randomWordId[i] = resultSet.getInt("id");
+                i++;
+            }
+            return randomWordId;
+        }
+    }
+    //写操作
     public static void updateWordAsExtracted(Connection connection, int wordId,String category) throws SQLException {
         // 更新数据库中的 isExtracted 字段
         String updateQuery = "UPDATE " + category + " SET isExtracted = 1 WHERE id = ?";
 
-
+        System.out.println("写入数据库ing");
         PreparedStatement statement = connection.prepareStatement(updateQuery);
         statement.setInt(1, wordId);
         statement.executeUpdate();
-    }
 
+    }
+    //先读，可能包含写操作
     public static String getChineseMeaning(Connection connection, String category, int wordId) throws Exception {
         String selectMeaningSQL = "SELECT translation FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectMeaningSQL)) {
@@ -74,6 +92,7 @@ public class RandomWord  {
                     String word = getWordById(connection, category,wordId);
                     String chineseMeaning = searchWordMeaning(word);
                     updateReviewDatabase(connection, wordId, category);
+                    System.out.println("写入数据库ing");
                     return chineseMeaning;
                 } else {
                     // 含义不为空，直接返回
@@ -84,7 +103,7 @@ public class RandomWord  {
             }
         }
     }
-
+    //读操作
     public static String getWordById(Connection connection, String category, int wordId) throws Exception {
         String selectWordSQL = "SELECT word FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
@@ -111,7 +130,7 @@ public class RandomWord  {
             }
         }
     }
-
+    //读操作
     public static String getMeaningById(Connection connection, String category, int wordId) throws Exception {
         String selectWordSQL = "SELECT translation FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
@@ -125,9 +144,9 @@ public class RandomWord  {
             }
         }
     }
-
+    //读操作
     public static int getReviewTimeById(Connection connection, String category, int wordId) throws Exception {
-        String selectWordSQL = "SELECT review_time FROM review" + category +" WHERE id = ?";
+        String selectWordSQL = "SELECT review_time FROM " + category +" WHERE id = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectWordSQL)) {
             selectStatement.setInt(1, wordId);
             ResultSet resultSet = selectStatement.executeQuery();
@@ -184,7 +203,8 @@ public class RandomWord  {
         }
         return "未找到英文翻译或网络异常";
     }
-    //更新Review表
+
+    //更新Review表,写操作
     public static void updateReviewDatabase(Connection connection, int wordId, String tableName) throws Exception {
         //先查找Review表中是否有该单词
         String selectWordSQL = "SELECT * FROM review" + tableName +" WHERE id = ?";
@@ -196,25 +216,30 @@ public class RandomWord  {
                 updateReviewTime(connection, wordId, tableName);
             } else {
                 //如果没有该单词，则插入该单词
-                String updateMeaningSQL = "INSERT INTO review" + tableName + " (word, translation,type,review_time) VALUES (?, ?, ?, ?)";//将单词和中文含义插入到Review表中
+                String updateMeaningSQL = "INSERT OR IGNORE INTO review" + tableName + " (word, translation,type,review_time) VALUES (?, ?, ?, ?)";//将单词和中文含义插入到Review表中
                 try (PreparedStatement updateStatement = connection.prepareStatement(updateMeaningSQL)) {
                 updateStatement.setString(1, getWordById(connection, tableName, wordId));
                 updateStatement.setString(2, getMeaningById(connection, tableName, wordId));
                 updateStatement.setString(3, getTypeById(connection, tableName, wordId));
-                updateStatement.setInt(4, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
+                updateStatement.setInt(4, getReviewTimeById(connection, "review"+tableName, wordId) + 1);//review_time加1
                 updateStatement.executeUpdate();
-        }
+                System.out.println("写入数据库ing");
+                }catch (Exception e) {
+                    throw new RuntimeException(e);}
             }
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
     }
-
+    //写操作
     private static void updateReviewTime(Connection connection, int wordId, String tableName) {
         String updateReviewTimeSQL = "UPDATE review" + tableName + " SET review_time = ? WHERE id = ?";
         try (PreparedStatement updateStatement = connection.prepareStatement(updateReviewTimeSQL)) {
             updateStatement.setInt(1, getReviewTimeById(connection, tableName, wordId) + 1);//review_time加1
             updateStatement.setInt(2, wordId);
             updateStatement.executeUpdate();
+            System.out.println("写入数据库ing");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -231,6 +256,24 @@ public class RandomWord  {
             }
         } catch (IOException e) {
             return false;
+        }
+    }
+    //初始化，涉及写操作
+    public static void initializeCurrentDict(Connection conn, String category) {
+        String initializeSQL = "UPDATE " + category + " SET isExtracted = NULL";
+        try (PreparedStatement updateStatement = conn.prepareStatement(initializeSQL)) {
+            updateStatement.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        //清楚Review表中全部的数据，仅保留字段
+
+        String initializeReviewSQL = "DELETE FROM review" + category;
+        try (PreparedStatement updateStatement = conn.prepareStatement(initializeReviewSQL)) {
+            updateStatement.executeUpdate();
+            System.out.println("写入数据库ing");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

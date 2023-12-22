@@ -7,14 +7,15 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="563.0" prefWidth="794.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.myapp.myapp.MenuController">
    <children>
       <Label id="judgeLabel" fx:id="judgeLabel" alignment="CENTER" layoutX="353.0" layoutY="483.0" prefHeight="30.0" prefWidth="251.0" />
       <TextField fx:id="searchTextField" layoutX="182.0" prefHeight="86.0" prefWidth="525.0" promptText="请输入要查找的单词" />
       <Button fx:id="searchButton" layoutX="706.0" mnemonicParsing="false" prefHeight="86.0" prefWidth="88.0" text="搜索" />
-      <Button fx:id="formerButton" layoutX="704.0" layoutY="247.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="上一个" />
-      <Button fx:id="nextButton" layoutX="706.0" layoutY="417.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="下一个" />
+      <Button fx:id="formerButton" layoutX="706.0" layoutY="211.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="上一个" />
+      <Button fx:id="nextButton" layoutX="706.0" layoutY="447.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="88.0" text="下一个" />
       <Button fx:id="buttonA" layoutX="228.0" layoutY="241.0" mnemonicParsing="false" text="ButtonA" />
       <Button fx:id="buttonB" layoutX="228.0" layoutY="297.0" mnemonicParsing="false" text="ButtonB" />
       <Button fx:id="buttonC" layoutX="228.0" layoutY="356.0" mnemonicParsing="false" text="ButtonC" />
@@ -42,5 +43,11 @@
       <Label fx:id="labelC" layoutX="230.0" layoutY="387.0" prefHeight="30.0" prefWidth="475.0" />
       <Label fx:id="labelD" layoutX="230.0" layoutY="447.0" prefHeight="30.0" prefWidth="475.0" />
       <Button fx:id="reviewButton" layoutX="3.0" layoutY="484.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="194.0" text="开始复习" />
+      <Button fx:id="initializeCurrentDict" disable="true" layoutY="146.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="178.0" text="初始化当前词典" textFill="RED">
+         <font>
+            <Font name="Times New Roman" size="18.0" />
+         </font>
+      </Button>
+      <Label fx:id="currentDict" alignment="CENTER" layoutX="4.0" layoutY="114.0" prefHeight="33.0" prefWidth="178.0" text="currentDict" visible="false" />
    </children>
 </AnchorPane>
